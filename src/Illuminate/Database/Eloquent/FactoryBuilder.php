@@ -4,6 +4,7 @@ namespace Illuminate\Database\Eloquent;
 
 use Closure;
 use Faker\Generator as Faker;
+use Illuminate\Tests\Routing\RouteModelBindingClosureStub;
 use InvalidArgumentException;
 
 class FactoryBuilder
@@ -58,6 +59,13 @@ class FactoryBuilder
     protected $amount = null;
 
     /**
+     * The closure used to execute after an instance is built
+     *
+     * @var Closure|null
+     */
+    protected  $instanceClosures = [];
+
+    /**
      * Create an new builder instance.
      *
      * @param  string  $class
@@ -67,13 +75,14 @@ class FactoryBuilder
      * @param  \Faker\Generator  $faker
      * @return void
      */
-    public function __construct($class, $name, array $definitions, array $states, Faker $faker)
+    public function __construct($class, $name, array $definitions, array $states, Faker $faker, array $instanceClosure)
     {
         $this->name = $name;
         $this->class = $class;
         $this->faker = $faker;
         $this->states = $states;
         $this->definitions = $definitions;
+        $this->instanceClosures = $instanceClosure;
     }
 
     /**
@@ -119,6 +128,18 @@ class FactoryBuilder
         }
 
         return $results;
+    }
+
+    /**
+     * Create an instance closure to be executed upon factory completion.
+     *
+     * @param array $closures
+     * @return mixed
+     */
+    public function instanceClosures(array $closures)
+    {
+        $this->instanceClosures = $closures;
+        return $this;
     }
 
     /**
@@ -196,9 +217,14 @@ class FactoryBuilder
                 throw new InvalidArgumentException("Unable to locate factory with name [{$this->name}] [{$this->class}].");
             }
 
-            return new $this->class(
+            $instance = new $this->class(
                 $this->getRawAttributes($attributes)
             );
+
+            foreach($this->instanceClosures as $closure) {
+                $instance = $this->callInstanceClosures($instance, $closure);
+            }
+            return $instance;
         });
     }
 
@@ -239,5 +265,12 @@ class FactoryBuilder
         }
 
         return $attributes;
+    }
+
+    protected function callInstanceClosures(Model $instance, $closure)
+    {
+        $instance = $closure instanceof Closure
+                        ? $closure($instance) : $instance;
+        return $instance;
     }
 }

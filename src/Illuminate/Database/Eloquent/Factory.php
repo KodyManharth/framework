@@ -30,6 +30,13 @@ class Factory implements ArrayAccess
     protected $faker;
 
     /**
+     * The registered instance closures for the builder
+     *
+     * @var array
+     */
+    protected $instanceClosures = [];
+
+    /**
      * Create a new factory instance.
      *
      * @param  \Faker\Generator  $faker
@@ -62,9 +69,9 @@ class Factory implements ArrayAccess
      * @param  callable  $attributes
      * @return $this
      */
-    public function defineAs($class, $name, callable $attributes)
+    public function defineAs($class, $name, callable $attributes, callable $instanceClosures = [])
     {
-        return $this->define($class, $attributes, $name);
+        return $this->define($class, $attributes, $name, $instanceClosures);
     }
 
     /**
@@ -75,9 +82,10 @@ class Factory implements ArrayAccess
      * @param  string  $name
      * @return $this
      */
-    public function define($class, callable $attributes, $name = 'default')
+    public function define($class, callable $attributes, $name = 'default', callable $instanceClosures = [])
     {
         $this->definitions[$class][$name] = $attributes;
+        $this->instanceClosures[$class][$name] = $instanceClosures;
 
         return $this;
     }
@@ -184,7 +192,7 @@ class Factory implements ArrayAccess
      */
     public function of($class, $name = 'default')
     {
-        return new FactoryBuilder($class, $name, $this->definitions, $this->states, $this->faker);
+        return new FactoryBuilder($class, $name, $this->definitions, $this->states, $this->faker, $this->instanceClosures);
     }
 
     /**
