@@ -73,9 +73,10 @@ class FactoryBuilder
      * @param  array  $definitions
      * @param  array  $states
      * @param  \Faker\Generator  $faker
+     * @param  array $instanceClosures
      * @return void
      */
-    public function __construct($class, $name, array $definitions, array $states, Faker $faker, array $instanceClosure)
+    public function __construct($class, $name, array $definitions, array $states, Faker $faker, array $instanceClosures)
     {
         $this->name = $name;
         $this->class = $class;
@@ -267,6 +268,14 @@ class FactoryBuilder
         return $attributes;
     }
 
+    /**
+     * Perform post-creation instance closures for the factory
+     *
+     * @param Model $instance
+     * @param $closure
+     * @return \Illuminate\Database\Eloquent\Model
+     *
+     */
     protected function callInstanceClosures(Model $instance, $closure)
     {
         $instance = $closure instanceof Closure

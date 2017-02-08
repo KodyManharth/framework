@@ -67,6 +67,7 @@ class Factory implements ArrayAccess
      * @param  string  $class
      * @param  string  $name
      * @param  callable  $attributes
+     * @param  array $instanceClosures
      * @return $this
      */
     public function defineAs($class, $name, callable $attributes, callable $instanceClosures = [])
@@ -80,6 +81,7 @@ class Factory implements ArrayAccess
      * @param  string  $class
      * @param  callable  $attributes
      * @param  string  $name
+     * @param  array $instanceClosures
      * @return $this
      */
     public function define($class, callable $attributes, $name = 'default', callable $instanceClosures = [])
