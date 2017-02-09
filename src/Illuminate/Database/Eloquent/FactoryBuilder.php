@@ -83,7 +83,7 @@ class FactoryBuilder
         $this->faker = $faker;
         $this->states = $states;
         $this->definitions = $definitions;
-        $this->instanceClosures = $instanceClosure;
+        $this->instanceClosures = $instanceClosures;
     }
 
     /**
@@ -222,9 +222,8 @@ class FactoryBuilder
                 $this->getRawAttributes($attributes)
             );
 
-            foreach($this->instanceClosures as $closure) {
-                $instance = $this->callInstanceClosures($instance, $closure);
-            }
+            $instance = $this->callInstanceClosures($instance);
+
             return $instance;
         });
     }
@@ -276,10 +275,13 @@ class FactoryBuilder
      * @return \Illuminate\Database\Eloquent\Model
      *
      */
-    protected function callInstanceClosures(Model $instance, $closure)
+    protected function callInstanceClosures(Model $instance)
     {
-        $instance = $closure instanceof Closure
-                        ? $closure($instance) : $instance;
+        foreach($this->instanceClosures as $closure) {
+            $instance = $closure instanceof Closure
+                ? $closure($instance) : $instance;
+        }
+
         return $instance;
     }
 }
